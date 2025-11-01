@@ -1,10 +1,24 @@
+s# Core Streamlit
 streamlit
+
+# Data handling
 pandas
-openpyxl
+openpyxl        # untuk baca/tulis Excel
+numpy
+
+# Geospatial
 geopandas
+pyogrio         # alternatif ringan untuk membaca shapefile/geojson
+shapely
+
+# Mapping
 folium
 streamlit-folium
-plotly
 branca
-pyogrio
-shapely
+
+# Visualization
+plotly
+
+# Optional utilities
+python-dateutil
+pytz
