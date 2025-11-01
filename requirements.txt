@@ -5,4 +5,4 @@ folium
 streamlit-folium
 plotly
 branca
-openpyxl
+openpyxl2
