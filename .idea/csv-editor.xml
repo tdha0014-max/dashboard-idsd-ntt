@@ -24,6 +24,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="$APPLICATION_CONFIG_DIR$/scratches/scratch_2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/a7f906bd-ec5b-4dcc-b835-7d8f80a7320e.csv">
           <value>
             <Attribute>
