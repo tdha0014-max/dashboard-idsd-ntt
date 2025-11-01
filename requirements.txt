@@ -1,14 +1,14 @@
-s# Core Streamlit
+# Core Streamlit
 streamlit
 
 # Data handling
 pandas
-openpyxl        # untuk baca/tulis Excel
+openpyxl
 numpy
 
 # Geospatial
 geopandas
-pyogrio         # alternatif ringan untuk membaca shapefile/geojson
+pyogrio
 shapely
 
 # Mapping
