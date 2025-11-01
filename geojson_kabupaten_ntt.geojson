@@ -1,0 +1,21 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {"type":"Feature","properties":{"NAME_2":"SUMBA BARAT"},"geometry":{"type":"Polygon","coordinates":[[[120,-9],[120.5,-9],[120.5,-9.5],[120,-9.5],[120,-9]]]}},
+    {"type":"Feature","properties":{"NAME_2":"SUMBA TIMUR"},"geometry":{"type":"Polygon","coordinates":[[[121,-9],[121.5,-9],[121.5,-9.5],[121,-9.5],[121,-9]]]}},
+    {"type":"Feature","properties":{"NAME_2":"SUMBA TENGAH"},"geometry":{"type":"Polygon","coordinates":[[[121,-9.5],[121.5,-9.5],[121.5,-10],[121,-10],[121,-9.5]]]}},
+    {"type":"Feature","properties":{"NAME_2":"SUMBA BARAT DAYA"},"geometry":{"type":"Polygon","coordinates":[[[120,-9.5],[120.5,-9.5],[120.5,-10],[120,-10],[120,-9.5]]]}},
+    {"type":"Feature","properties":{"NAME_2":"ENDE"},"geometry":{"type":"Polygon","coordinates":[[[122,-9.5],[122.5,-9.5],[122.5,-10],[122,-10],[122,-9.5]]]}},
+    {"type":"Feature","properties":{"NAME_2":"NGADA"},"geometry":{"type":"Polygon","coordinates":[[[122,-10],[122.5,-10],[122.5,-10.5],[122,-10.5],[122,-10]]]}},
+    {"type":"Feature","properties":{"NAME_2":"MANGGARAI"},"geometry":{"type":"Polygon","coordinates":[[[123,-9.5],[123.5,-9.5],[123.5,-10],[123,-10],[123,-9.5]]]}},
+    {"type":"Feature","properties":{"NAME_2":"MANGGARAI BARAT"},"geometry":{"type":"Polygon","coordinates":[[[122.5,-9.5],[123,-9.5],[123,-10],[122.5,-10],[122.5,-9.5]]]}},
+    {"type":"Feature","properties":{"NAME_2":"MANGGARAI TIMUR"},"geometry":{"type":"Polygon","coordinates":[[[123,-10],[123.5,-10],[123.5,-10.5],[123,-10.5],[123,-10]]]}},
+    {"type":"Feature","properties":{"NAME_2":"NAGEKEO"},"geometry":{"type":"Polygon","coordinates":[[[122.5,-10],[123,-10],[123,-10.5],[122.5,-10.5],[122.5,-10]]]}},
+    {"type":"Feature","properties":{"NAME_2":"KUPANG"},"geometry":{"type":"Polygon","coordinates":[[[124,-10],[124.5,-10],[124.5,-10.5],[124,-10.5],[124,-10]]]}},
+    {"type":"Feature","properties":{"NAME_2":"BELU"},"geometry":{"type":"Polygon","coordinates":[[[123.5,-10],[124,-10],[124,-10.5],[123.5,-10.5],[123.5,-10]]]}},
+    {"type":"Feature","properties":{"NAME_2":"ALOR"},"geometry":{"type":"Polygon","coordinates":[[[124.5,-8.5],[125,-8.5],[125,-9],[124.5,-9],[124.5,-8.5]]]}},
+    {"type":"Feature","properties":{"NAME_2":"LEMBATA"},"geometry":{"type":"Polygon","coordinates":[[[124,-9],[124.5,-9],[124.5,-9.5],[124,-9.5],[124,-9]]]}},
+    {"type":"Feature","properties":{"NAME_2":"FLORES TIMUR"},"geometry":{"type":"Polygon","coordinates":[[[123.5,-9],[124,-9],[124,-9.5],[123.5,-9.5],[123.5,-9]]]}},
+    {"type":"Feature","properties":{"NAME_2":"SIKKA"},"geometry":{"type":"Polygon","coordinates":[[[123,-9],[123.5,-9],[123.5,-9.5],[123,-9.5],[123,-9]]]}}
+  ]
+}
