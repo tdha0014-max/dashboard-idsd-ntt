@@ -1,8 +1,10 @@
 streamlit
 pandas
-geopandas
+plotly
+numpy
 folium
 streamlit-folium
-plotly
 branca
-openpyxl2
+geopandas
+pyogrio
+shapely
