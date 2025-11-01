@@ -1,24 +1,13 @@
-# Core Streamlit
 streamlit
-
-# Data handling
 pandas
 openpyxl
 numpy
-
-# Geospatial
 geopandas
 pyogrio
 shapely
-
-# Mapping
 folium
 streamlit-folium
 branca
-
-# Visualization
 plotly
-
-# Optional utilities
 python-dateutil
 pytz
