@@ -1,13 +1,8 @@
 streamlit
 pandas
-openpyxl
-numpy
 geopandas
-pyogrio
-shapely
 folium
 streamlit-folium
-branca
 plotly
-python-dateutil
-pytz
+branca
+openpyxl

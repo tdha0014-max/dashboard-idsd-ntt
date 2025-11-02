@@ -1,13 +1,6 @@
 # =======================================
 # 📊 Dashboard IDSD Nusa Tenggara Timur
 # =======================================
-import streamlit as st
-
-st.set_page_config(
-    page_title="IDSD NTT Dashboard",
-    layout="wide",    # Lebar penuh layar
-    initial_sidebar_state="auto"
-)
 
 import streamlit as st
 import pandas as pd
@@ -135,23 +128,31 @@ colormap.caption = f"Skor {nama_pilar.get(indikator, indikator)} ({tahun})"
 # ---------------------------
 m = folium.Map(location=[-8.6, 121.1], zoom_start=7, tiles="CartoDB positron")
 
-folium.GeoJson(
-    gdf_merged,
-    name="IDSD NTT",
-    style_function=lambda x: {
-        "fillColor": colormap(x["properties"][indikator])
-        if x["properties"].get(indikator) is not None
-        else "#d3d3d3",
-        "color": "black",
-        "weight": 1,
-        "fillOpacity": 0.7,
-    },
-    tooltip=folium.features.GeoJsonTooltip(
-        fields=["kabupaten", indikator],
-        aliases=["Kabupaten/Kota:", f"{nama_pilar.get(indikator, indikator)}:"],
-        localize=True,
-    ),
-).add_to(m)
+# Tambahkan warna ke setiap feature sebelum membuat GeoJSON
+for idx, row in gdf_merged.iterrows():
+    nilai = row[indikator]
+    if pd.notna(nilai):
+        try:
+            fill_color = colormap(float(nilai))
+        except:
+            fill_color = "#d3d3d3"
+    else:
+        fill_color = "#d3d3d3"
+
+    # Buat popup/tooltip info
+    popup_text = f"<b>{row['kabupaten']}</b><br>{nama_pilar.get(indikator, indikator)}: {nilai:.2f}" if pd.notna(
+        nilai) else f"<b>{row['kabupaten']}</b><br>Tidak ada data"
+
+    folium.GeoJson(
+        row['geometry'].__geo_interface__,
+        style_function=lambda x, fc=fill_color: {
+            "fillColor": fc,
+            "color": "black",
+            "weight": 1,
+            "fillOpacity": 0.7,
+        },
+        tooltip=folium.Tooltip(popup_text)
+    ).add_to(m)
 
 colormap.add_to(m)
 
@@ -164,7 +165,20 @@ col1, col2 = st.columns([2, 1])
 
 with col1:
     st.subheader(f"🗺️ Peta {nama_pilar.get(indikator, indikator)} - Tahun {tahun}")
-    st_folium(m, width=900, height=550)
+    # Simpan peta sebagai HTML dan tampilkan
+    from streamlit.components.v1 import html
+    import tempfile
+    import os
+
+    # Simpan peta ke file temporary
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.html') as f:
+        m.save(f.name)
+        with open(f.name, 'r') as f_read:
+            map_html = f_read.read()
+        os.unlink(f.name)
+
+    # Tampilkan sebagai HTML component
+    html(map_html, height=550)
 
 with col2:
     st.subheader("📋 Tabel Skor Pilar")

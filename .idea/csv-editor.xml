@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/Data_2024_fixed.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/NTT_2023.csv">
           <value>
             <Attribute>
@@ -39,6 +46,13 @@
           </value>
         </entry>
         <entry key="/daftar_nama_geojson.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="/data/scores.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -94,6 +108,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/ntt_idsd_2024_final.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="/ntt_idsd_2024_final_complete.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/ntt_idsd_2024_final_fixed.csv">
           <value>
             <Attribute>
@@ -101,7 +129,21 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/ntt_idsd_2024_fixed.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/ntt_idsd_full.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="/perbandingan_struktur_2023_vs_2024.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
