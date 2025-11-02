@@ -4,3 +4,7 @@ __pycache__/
 .DS_Store
 *.xls
 *.xlsx
+*.zip
+.venv/
+GeoJSON/NTT_kabupaten/
+GeoJSON/NTT_extracted/
