@@ -1,10 +1,7 @@
-__pycache__/
-*.pyc
-.idea/
-.DS_Store
-*.xls
-*.xlsx
-*.zip
-.venv/
-GeoJSON/NTT_kabupaten/
-GeoJSON/NTT_extracted/
+echo "*.xls" >> .gitignore
+echo "*.xlsx" >> .gitignore
+echo "*.zip" >> .gitignore
+echo "*.sh" >> .gitignore
+echo ".venv/" >> .gitignore
+echo "GeoJSON/" >> .gitignore
+echo "__pycache__/" >> .gitignore
