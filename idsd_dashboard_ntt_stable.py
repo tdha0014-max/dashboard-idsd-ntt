@@ -1,127 +1,195 @@
 # =======================================
-# 🏆 Super Dashboard IDSD NTT - Final
+# 📊 Dashboard Perbandingan IDSD NTT 2023 vs 2024
 # =======================================
+
 import streamlit as st
 import pandas as pd
 import geopandas as gpd
 import folium
-from streamlit_folium import st_folium
+from streamlit.components.v1 import html
+from branca.colormap import linear
 import plotly.express as px
 import plotly.graph_objects as go
-from branca.colormap import linear
-from io import BytesIO
 
-st.set_page_config(page_title="Super Dashboard IDSD NTT", layout="wide")
+# ---------------------------
+# ⚙️ Konfigurasi halaman
+# ---------------------------
+st.set_page_config(page_title="Dashboard Perbandingan IDSD NTT", layout="wide")
 
-# ===== Load Data =====
+st.title("📊 Dashboard Perbandingan IDSD Nusa Tenggara Timur (2023 vs 2024)")
+st.markdown("Bandingkan skor IDSD antar kabupaten/kota dan antar tahun untuk setiap pilar dan indikator.")
+
+# ---------------------------
+# 📂 Load Data
+# ---------------------------
 @st.cache_data
 def load_data():
-    df_2023 = pd.read_csv("data/idsd_data_2023_lengkap.csv")
-    df_2024 = pd.read_csv("data/idsd_data_2024.csv")
+    df_2023 = pd.read_csv("data_2023_lengkap.csv")
+    df_2024 = pd.read_csv("data_2024_lengkap.csv")
+
+    # Normalisasi nama kabupaten
+    df_2023["kabupaten"] = df_2023["kabupaten"].str.upper().str.strip()
+    df_2024["kabupaten"] = df_2024["kabupaten"].str.upper().str.strip()
+
+    # Samakan kolom antar tahun
+    semua_kolom = sorted(set(df_2023.columns) | set(df_2024.columns))
+    for df in [df_2023, df_2024]:
+        for kol in semua_kolom:
+            if kol not in df.columns:
+                df[kol] = None
+        df = df[semua_kolom]
+
     return df_2023, df_2024
 
 df_2023, df_2024 = load_data()
 
-# ===== Load GeoJSON =====
+# ---------------------------
+# 🗺️ Load GeoJSON
+# ---------------------------
 @st.cache_resource
 def load_geojson():
-    gdf = gpd.read_file("data/geojson_kabupaten_ntt_no_csv.geojson")
+    gdf = gpd.read_file("NTT_Kabupaten_All.geojson")
     gdf["kabupaten"] = gdf["kabupaten"].str.upper().str.strip()
     return gdf
 
 gdf = load_geojson()
 
-# ===== Nama Pilar =====
-nama_pilar = {f'pilar_{i}': f'Pilar {i}' for i in range(1,13)}
+# ---------------------------
+# 📋 Mapping Nama Pilar
+# ---------------------------
+nama_pilar = {
+    f"pilar_{i}": f"Pilar {i}" for i in range(1, 13)
+}
 
-# ===== Sidebar =====
-with st.sidebar:
-    st.header("Filter Dashboard")
-    tahun_sel = st.multiselect("📅 Tahun", ["2023","2024"], default=["2023","2024"])
-    kab_sel = st.multiselect("🏛 Pilih Kabupaten/Kota:", sorted(df_2023['kabupaten'].unique()), default=["Semua"])
-    indikator = st.selectbox("🎯 Pilih Pilar:", [f'pilar_{i}' for i in range(1,13)], format_func=lambda x: nama_pilar.get(x,x))
+# ---------------------------
+# 🎯 Filter Pilihan
+# ---------------------------
+col1, col2 = st.columns(2)
+with col1:
+    indikator = st.selectbox("🎯 Pilih Pilar IDSD:", [f"pilar_{i}" for i in range(1, 13)],
+                             format_func=lambda x: nama_pilar.get(x, x))
+with col2:
+    mode = st.radio("📅 Mode Perbandingan:", ["Antar Tahun", "Antar Kabupaten"], horizontal=True)
 
-# ===== Fungsi Merge Data =====
-def merge_data(tahun):
-    df = df_2023 if tahun=="2023" else df_2024
-    df["kabupaten"] = df["kabupaten"].str.upper().str.strip()
-    df_map = df[['kabupaten', indikator]].copy()
-    gdf_merged = gdf.merge(df_map, on="kabupaten", how="left")
-    gdf_merged[indikator] = pd.to_numeric(gdf_merged[indikator], errors="coerce")
-    return gdf_merged, df
+# ---------------------------
+# 🔄 Gabung Data dan Sinkronisasi
+# ---------------------------
+gdf_merged_2023 = gdf.merge(df_2023[["kabupaten", indikator]], on="kabupaten", how="left")
+gdf_merged_2024 = gdf.merge(df_2024[["kabupaten", indikator]], on="kabupaten", how="left")
 
-# ===== Tabs Tahun =====
-tabs = st.tabs(tahun_sel)
-for i, tahun in enumerate(tahun_sel):
-    with tabs[i]:
-        gdf_merged, df_terpilih = merge_data(tahun)
+# ---------------------------
+# 🎨 Peta Perbandingan
+# ---------------------------
+colmap1, colmap2 = st.columns(2)
+colormap = linear.YlGnBu_09.scale(
+    min(df_2023[indikator].min(), df_2024[indikator].min()),
+    max(df_2023[indikator].max(), df_2024[indikator].max())
+)
 
-        # ===== Colormap =====
-        vmin, vmax = gdf_merged[indikator].min(), gdf_merged[indikator].max()
-        if vmin==vmax: vmax=vmin+0.01
-        colormap = linear.YlGnBu_09.scale(vmin,vmax).to_step(n=10)
-        colormap.caption = f"{nama_pilar.get(indikator,indikator)} ({tahun})"
+with colmap1:
+    st.subheader(f"🗺️ Peta {nama_pilar[indikator]} - 2023")
+    m1 = folium.Map(location=[-8.6, 121.1], zoom_start=7, tiles="CartoDB positron")
 
-        # ===== Highlight Kabupaten =====
-        def style_function(feature):
-            val = feature["properties"].get(indikator)
-            base_color = colormap(val) if val is not None else "#d3d3d3"
-            if kab_sel != ["Semua"] and feature["properties"]["kabupaten"] in kab_sel:
-                base_color = "#ff6600"
-            return {"fillColor": base_color, "color":"black","weight":1,"fillOpacity":0.7}
-
-        m = folium.Map(location=[-8.6,121.1], zoom_start=7, tiles="CartoDB positron")
+    for _, row in gdf_merged_2023.iterrows():
+        val = row[indikator]
+        warna = colormap(val) if pd.notna(val) else "#d3d3d3"
         folium.GeoJson(
-            gdf_merged,
-            style_function=style_function,
-            tooltip=folium.features.GeoJsonTooltip(
-                fields=["kabupaten", indikator],
-                aliases=["Kabupaten/Kota:", f"{nama_pilar.get(indikator,indikator)}:"],
-                localize=True
-            )
-        ).add_to(m)
-        colormap.add_to(m)
-        st.subheader(f"🗺️ Peta {nama_pilar.get(indikator,indikator)} - Tahun {tahun}")
-        st_folium(m, width=900, height=550)
+            row["geometry"].__geo_interface__,
+            style_function=lambda x, fc=warna: {"fillColor": fc, "color": "black", "weight": 1, "fillOpacity": 0.7},
+            tooltip=f"<b>{row['kabupaten']}</b><br>{nama_pilar[indikator]}: {val if pd.notna(val) else 'N/A'}"
+        ).add_to(m1)
+    colormap.add_to(m1)
+    html(m1._repr_html_(), height=450)
 
-        # ===== Ranking Chart =====
-        st.subheader("📊 Ranking Kabupaten")
-        if "Semua" in kab_sel:
-            df_sorted = df_terpilih[['kabupaten', indikator]].sort_values(by=indikator, ascending=False)
-        else:
-            df_sorted = df_terpilih[df_terpilih['kabupaten'].isin(kab_sel)][['kabupaten', indikator]].sort_values(by=indikator, ascending=False)
+with colmap2:
+    st.subheader(f"🗺️ Peta {nama_pilar[indikator]} - 2024")
+    m2 = folium.Map(location=[-8.6, 121.1], zoom_start=7, tiles="CartoDB positron")
 
-        fig = px.bar(df_sorted, x='kabupaten', y=indikator, color=indikator, color_continuous_scale='YlGnBu')
-        fig.update_layout(xaxis_tickangle=-45, height=500, showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+    for _, row in gdf_merged_2024.iterrows():
+        val = row[indikator]
+        warna = colormap(val) if pd.notna(val) else "#d3d3d3"
+        folium.GeoJson(
+            row["geometry"].__geo_interface__,
+            style_function=lambda x, fc=warna: {"fillColor": fc, "color": "black", "weight": 1, "fillOpacity": 0.7},
+            tooltip=f"<b>{row['kabupaten']}</b><br>{nama_pilar[indikator]}: {val if pd.notna(val) else 'N/A'}"
+        ).add_to(m2)
+    colormap.add_to(m2)
+    html(m2._repr_html_(), height=450)
 
-        # ===== Radar Chart =====
-        st.subheader("📈 Radar Chart 12 Pilar")
-        df_radar = df_terpilih.set_index('kabupaten')[[f'pilar_{i}' for i in range(1,13)]]
-        if "Semua" not in kab_sel:
-            df_radar = df_radar.loc[kab_sel]
-        fig_radar = go.Figure()
-        for idx,row in df_radar.iterrows():
-            fig_radar.add_trace(go.Scatterpolar(r=row.values, theta=list(nama_pilar.values()), fill='toself', name=idx))
-        fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0,100])), showlegend=True, height=550)
-        st.plotly_chart(fig_radar, use_container_width=True)
-
-        # ===== Download Excel =====
-        st.subheader("💾 Download Data")
-        def to_excel(df):
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                df.to_excel(writer, index=False, sheet_name='Data')
-            return output.getvalue()
-
-        excel_data = to_excel(df_terpilih)
-        st.download_button("📥 Download Data Excel", excel_data, file_name=f"IDSD_NTT_{tahun}.xlsx", mime="application/vnd.ms-excel")
-
-# ===== Statistik Deskriptif =====
+# ---------------------------
+# 📊 Perbandingan Skor
+# ---------------------------
 st.markdown("---")
-st.subheader("📊 Statistik Deskriptif Pilar Terpilih")
-col1,col2,col3,col4 = st.columns(4)
-col1.metric("📈 Max", f"{df_terpilih[indikator].max():.2f}")
-col2.metric("📉 Min", f"{df_terpilih[indikator].min():.2f}")
-col3.metric("📊 Rata-rata", f"{df_terpilih[indikator].mean():.2f}")
-col4.metric("🎯 Median", f"{df_terpilih[indikator].median():.2f}")
+st.subheader(f"📈 Perbandingan Skor {nama_pilar[indikator]} 2023 vs 2024")
+
+df_compare = pd.merge(
+    df_2023[["kabupaten", indikator]],
+    df_2024[["kabupaten", indikator]],
+    on="kabupaten",
+    how="outer",
+    suffixes=("_2023", "_2024")
+)
+
+df_compare["Δ (2024 - 2023)"] = df_compare[f"{indikator}_2024"] - df_compare[f"{indikator}_2023"]
+
+fig = px.bar(
+    df_compare.sort_values("Δ (2024 - 2023)", ascending=False),
+    x="kabupaten",
+    y="Δ (2024 - 2023)",
+    color="Δ (2024 - 2023)",
+    color_continuous_scale="RdYlGn",
+    title=f"Δ Skor {nama_pilar[indikator]} (2024 - 2023)"
+)
+fig.update_layout(xaxis_tickangle=-45, height=450)
+st.plotly_chart(fig, use_container_width=True)
+
+# ---------------------------
+# 🔍 Detail Indikator per Pilar
+# ---------------------------
+st.markdown("---")
+st.subheader(f"🔍 Detail Indikator {nama_pilar[indikator]}")
+
+# Ambil kolom indikator rinci
+kolom_indikator = [c for c in df_2023.columns if c.startswith(f"{indikator}_")]
+
+if len(kolom_indikator) > 0:
+    kab = st.selectbox("🏛 Pilih Kabupaten/Kota:", sorted(df_2023["kabupaten"].unique()))
+
+    df_2023_det = df_2023[df_2023["kabupaten"] == kab][kolom_indikator].T.reset_index()
+    df_2024_det = df_2024[df_2024["kabupaten"] == kab][kolom_indikator].T.reset_index()
+
+    df_2023_det.columns = ["Indikator", "2023"]
+    df_2024_det.columns = ["Indikator", "2024"]
+
+    df_merge_det = pd.merge(df_2023_det, df_2024_det, on="Indikator", how="outer")
+    df_merge_det["Δ (2024-2023)"] = df_merge_det["2024"] - df_merge_det["2023"]
+
+    st.dataframe(df_merge_det, use_container_width=True, height=450)
+
+    # Grafik perbandingan indikator
+    fig_ind = go.Figure()
+    fig_ind.add_trace(go.Bar(y=df_merge_det["Indikator"], x=df_merge_det["2023"], orientation='h', name='2023'))
+    fig_ind.add_trace(go.Bar(y=df_merge_det["Indikator"], x=df_merge_det["2024"], orientation='h', name='2024'))
+    fig_ind.update_layout(
+        barmode='group', height=500,
+        title=f"Perbandingan Indikator {nama_pilar[indikator]} - {kab}"
+    )
+    st.plotly_chart(fig_ind, use_container_width=True)
+else:
+    st.info("ℹ️ Tidak ada indikator rinci untuk pilar ini.")
+
+# ---------------------------
+# 📈 Statistik Ringkas
+# ---------------------------
+st.markdown("---")
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("📈 Rata-rata 2023", f"{df_2023[indikator].mean():.2f}")
+with col2:
+    st.metric("📈 Rata-rata 2024", f"{df_2024[indikator].mean():.2f}")
+with col3:
+    delta_mean = df_2024[indikator].mean() - df_2023[indikator].mean()
+    st.metric("Δ Rata-rata (2024 - 2023)", f"{delta_mean:.2f}",
+              delta=f"{(delta_mean):+.2f}", delta_color="normal")
+
+st.success("✅ Dashboard perbandingan siap digunakan – semua kolom sudah disinkronkan otomatis.")
